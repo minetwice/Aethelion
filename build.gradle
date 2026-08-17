@@ -1,0 +1,28 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+}
+
+group = 'com.yourname.emoteengine'
+version = '1.0.0'
+sourceCompatibility = '17'
+targetCompatibility = '17'
+
+repositories {
+    mavenCentral()
+    maven { url 'https://papermc.io/repo/repository/maven-public/' }
+    maven { url 'https://repo.codemc.io/repository/maven-public/' }
+}
+
+dependencies {
+    compileOnly 'io.papermc.paper:paper-api:1.21-R0.1-SNAPSHOT'
+    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'net.kyori:adventure-api:4.14.0'
+    compileOnly 'com.comphenix.protocol:ProtocolLib:5.1.0'
+}
+
+shadowJar {
+    relocate 'com.google.gson', 'com.yourname.emoteengine.libs.gson'
+    relocate 'net.kyori', 'com.yourname.emoteengine.libs.kyori'
+    archiveFileName = 'EmoteEngine-' + project.version + '.jar'
+}
