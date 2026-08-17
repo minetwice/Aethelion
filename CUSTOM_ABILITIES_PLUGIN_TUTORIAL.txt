@@ -1,0 +1,206 @@
+================================================================================
+AETHELION - CUSTOM ABILITIES PLUGIN DEVELOPER GUIDE & COMPREHENSIVE TUTORIAL
+================================================================================
+Plugin Name: Aethelion
+Author: Twicefear
+Base Package: com.twicefear.aethelion
+
+================================================================================
+PART 1: OVERVIEW - HOW A DEVELOPER BUILDS A CUSTOM ABILITIES PLUGIN WITH AETHELION
+================================================================================
+
+When a Minecraft plugin developer builds a Custom Abilities / Magic Spells / RPG Skills
+plugin using Aethelion, they DO NOT need to write complex Display Entity math,
+packet manipulation, or force players to download a resource pack.
+
+Aethelion acts as the backbone engine for:
+1. Casting Animations (raising arms, floating, channel animations via JSON/BBModel).
+2. Custom Model Shields & Spell Constructs (OBJ / JSON / BBModel loaded dynamically).
+3. Custom Particle FX (JSON dust colors, item crack textures, and procedural code spirals/halos).
+4. Titan & Dwarf Transformations (scaling player body, head, or arms up to 3.125x or down to 0.2x).
+
+All these effects are visible to ALL online players automatically!
+
+
+================================================================================
+PART 2: COMPLETE JAVA CODE EXAMPLE - BUILDING A CUSTOM ABILITY
+================================================================================
+
+Below is a complete, real-world example of how a developer creates a "Titan Fireball" ability
+in their own plugin using Aethelion:
+
+```java
+package com.example.customabilities;
+
+import com.twicefear.aethelion.api.EmoteAPI;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Particle;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
+
+import java.io.InputStream;
+
+public class CustomAbilitiesPlugin extends JavaPlugin implements CommandExecutor {
+    private EmoteAPI aethelionAPI;
+
+    @Override
+    public void onEnable() {
+        // 1. Hook into Aethelion
+        if (Bukkit.getPluginManager().isPluginEnabled("Aethelion")) {
+            this.aethelionAPI = (EmoteAPI) Bukkit.getPluginManager().getPlugin("Aethelion");
+            getLogger().info("Successfully hooked into Aethelion!");
+        } else {
+            getLogger().severe("Aethelion plugin not found! Disabling CustomAbilitiesPlugin.");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
+        // 2. Register Custom Ability Animations from Plugin Resources (No Resource Pack)
+        InputStream castAnimStream = getResource("animations/spell_cast.json");
+        if (castAnimStream != null) {
+            aethelionAPI.registerAnimation("spell_cast_anim", castAnimStream);
+        }
+
+        // 3. Register Custom Particle Design from Plugin Resources (No Resource Pack)
+        InputStream particleStream = getResource("particles/fire_aura.json");
+        if (particleStream != null) {
+            aethelionAPI.registerParticle("fire_aura_fx", particleStream);
+        }
+
+        // 4. Register Procedural Code Particle Effect (Spiral Halo)
+        aethelionAPI.registerCustomCodeParticleEffect("titan_spiral", 60 /* 3 seconds */, (origin, tick, effect) -> {
+            double radius = 1.2;
+            double angle = tick * 0.4;
+            double x = radius * Math.cos(angle);
+            double z = radius * Math.sin(angle);
+            double y = (tick * 0.04);
+
+            origin.add(x, y, z);
+            origin.getWorld().spawnParticle(Particle.FLAME, origin, 2, 0.01, 0.01, 0.01, 0.02);
+            origin.getWorld().spawnParticle(Particle.SOUL_FIRE_FLAME, origin, 1, 0, 0, 0, 0);
+        });
+
+        // Register Command
+        getCommand("castability").setExecutor(this);
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (!(sender instanceof Player)) return true;
+        Player player = (Player) sender;
+
+        if (args.length > 0 && args[0].equalsIgnoreCase("titanfireball")) {
+            castTitanFireballAbility(player);
+            return true;
+        }
+
+        player.sendMessage(ChatColor.GOLD + "Usage: /castability titanfireball");
+        return true;
+    }
+
+    private void castTitanFireballAbility(Player player) {
+        player.sendMessage(ChatColor.GREEN + "🔥 You cast: Titan Fireball!");
+
+        // STEP A: Play Spell Casting Animation
+        aethelionAPI.playEmote(player, "spell_cast_anim");
+
+        // STEP B: Grow Player to Titan Size (Scale Body & Head)
+        aethelionAPI.setScale(player, "body", 2.2f);
+        aethelionAPI.setScale(player, "head", 1.8f);
+
+        // STEP C: Spawn Custom Fire Aura Particles (JSON Defined)
+        aethelionAPI.spawnParticleOnPlayer(player, "fire_aura_fx");
+
+        // STEP D: Run Procedural Code Particle Spiral around Player
+        aethelionAPI.runParticleEffectOnPlayer(player, "titan_spiral");
+
+        // STEP E: Reset Transformation & Stop Animation after 4 seconds (80 ticks)
+        Bukkit.getScheduler().runTaskLater(this, () -> {
+            aethelionAPI.resetScale(player, null); // Reset all bone scales
+            aethelionAPI.stopAllEmotes(player);
+            player.sendMessage(ChatColor.YELLOW + "Titan transformation ended.");
+        }, 80L);
+    }
+}
+```
+
+
+================================================================================
+PART 3: JSON CONFIGURATION FILES USED BY THE DEVELOPER
+================================================================================
+
+1. Animation JSON (`src/main/resources/animations/spell_cast.json`):
+```json
+{
+  "animations": {
+    "spell_cast_anim": {
+      "loop": false,
+      "length": 60,
+      "bones": {
+        "left_arm": {
+          "rotation": {
+            "keyframes": [
+              {"t": 0, "x": 0, "y": 0, "z": 0},
+              {"t": 15, "x": -90, "y": 20, "z": 0},
+              {"t": 45, "x": -90, "y": 20, "z": 0},
+              {"t": 60, "x": 0, "y": 0, "z": 0}
+            ]
+          }
+        },
+        "right_arm": {
+          "rotation": {
+            "keyframes": [
+              {"t": 0, "x": 0, "y": 0, "z": 0},
+              {"t": 15, "x": -90, "y": -20, "z": 0},
+              {"t": 45, "x": -90, "y": -20, "z": 0},
+              {"t": 60, "x": 0, "y": 0, "z": 0}
+            ]
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+2. Particle JSON (`src/main/resources/particles/fire_aura.json`):
+```json
+{
+  "particle": {
+    "type": "REDSTONE",
+    "color": { "r": 255, "g": 85, "b": 0 },
+    "size": 2.0,
+    "count": 25,
+    "offsetX": 0.5,
+    "offsetY": 1.0,
+    "offsetZ": 0.5,
+    "speed": 0.05
+  }
+}
+```
+
+
+================================================================================
+PART 4: HOW THE ABILITY FEELS & LOOKS IN-GAME
+================================================================================
+
+When the player executes `/castability titanfireball`:
+
+1. Visual Transformation:
+   - The player physically expands in size! Their body scales to 2.2x and head to 1.8x.
+   - Nearby players see the player growing instantly in real-time.
+
+2. Casting Pose & Arms Movement:
+   - The player's arms seamlessly raise upwards into a spell-channelling pose driven by keyframes.
+
+3. Custom Particle FX:
+   - A intense fiery orange dust aura explodes around the player.
+   - A dual flame spiral rises upwards around the growing player in a 3D helix shape.
+
+4. Zero Client Mods / Zero Resource Pack:
+   - Every single online player sees the full custom model pose, titan scaling, and flame spiral without downloading any resource pack or installing client mods!
+================================================================================
