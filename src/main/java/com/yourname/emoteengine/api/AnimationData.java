@@ -25,7 +25,7 @@ public class AnimationData {
     public EasingType getEasing() { return easing; }
 }
 
-class BoneKeyframe {
+public class BoneKeyframe {
     private final int tick;
     private final Vector3f position;
     private final Vector3f rotation;
@@ -44,6 +44,6 @@ class BoneKeyframe {
     public Vector3f getScale() { return scale; }
 }
 
-enum EasingType {
+public enum EasingType {
     LINEAR, SMOOTH, STEP, EASE_IN, EASE_OUT, EASE_IN_OUT
 }

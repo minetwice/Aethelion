@@ -56,7 +56,7 @@ public class EmotePlayer {
     }
 }
 
-class AnimationState {
+public class AnimationState {
     private final String id;
     private final AnimationData data;
     private int currentTick = 0;
