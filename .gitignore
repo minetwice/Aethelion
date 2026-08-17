@@ -9,8 +9,12 @@ target/
 
 # Dependencies
 .gradle/
-lib/
-deps/
+.mypy_cache/
+.pytest_cache/
+__pycache__/
+node_modules/
+venv/
+.venv/
 
 # Logs and temp files
 *.log
@@ -25,4 +29,13 @@ deps/
 .env
 .env.local
 *.env.*
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# System files
+.DS_Store
+Thumbs.db
 ```
