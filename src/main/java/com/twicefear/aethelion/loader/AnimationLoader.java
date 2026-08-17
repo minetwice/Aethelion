@@ -1,21 +1,26 @@
-package com.yourname.emoteengine.model;
+package com.twicefear.aethelion.loader;
 
 import com.google.gson.*;
-import com.yourname.emoteengine.api.AnimationData;
-import com.yourname.emoteengine.api.BoneKeyframe;
-import com.yourname.emoteengine.EmoteEngine;
+import com.twicefear.aethelion.Aethelion;
+import com.twicefear.aethelion.api.AnimationData;
+import com.twicefear.aethelion.api.BoneKeyframe;
 import org.joml.Vector3f;
-import java.io.*;
-import java.nio.file.*;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ModelLoader {
-    private final EmoteEngine plugin;
+/**
+ * Loads Blockbench animations from .bbmodel files
+ */
+public class AnimationLoader {
+    private final Aethelion plugin;
     private final Map<String, AnimationData> cache = new ConcurrentHashMap<>();
     private final Gson gson = new GsonBuilder().create();
     
-    public ModelLoader(EmoteEngine plugin) {
+    public AnimationLoader(Aethelion plugin) {
         this.plugin = plugin;
     }
     
@@ -25,7 +30,7 @@ public class ModelLoader {
         }
         
         try {
-            Path folder = Paths.get(plugin.getConfig().getString("emote-engine.animations.folder", "plugins/EmoteEngine/animations/"));
+            Path folder = Path.of(plugin.getConfig().getString("aethelion.animations.folder", "plugins/Aethelion/animations/"));
             Path file = folder.resolve(id + ".bbmodel");
             
             if (!Files.exists(file)) {
@@ -37,15 +42,17 @@ public class ModelLoader {
             JsonObject obj = JsonParser.parseString(json).getAsJsonObject();
             
             // Parse animations
-            JsonObject animations = obj.getAsJsonObject("animations");
-            if (!animations.has(id)) {
+            JsonObject animations = obj.has("animations") ? 
+                obj.getAsJsonObject("animations") : null;
+            
+            if (animations == null || !animations.has(id)) {
                 plugin.getLogger().warning("Animation '" + id + "' not found in file");
                 return null;
             }
             
             JsonObject animData = animations.getAsJsonObject(id);
-            int length = animData.get("length").getAsInt();
-            boolean loop = animData.get("loop").getAsBoolean();
+            int length = animData.has("length") ? animData.get("length").getAsInt() : 20;
+            boolean loop = animData.has("loop") && animData.get("loop").getAsBoolean();
             
             Map<String, BoneKeyframe[]> boneAnimations = new HashMap<>();
             
@@ -60,7 +67,7 @@ public class ModelLoader {
             
             AnimationData anim = new AnimationData(id, boneAnimations, length, loop);
             
-            if (plugin.getConfig().getBoolean("emote-engine.animations.cache", true)) {
+            if (plugin.getConfig().getBoolean("aethelion.animations.cache", true)) {
                 cache.put(id, anim);
             }
             
@@ -68,7 +75,7 @@ public class ModelLoader {
             
         } catch (Exception e) {
             plugin.getLogger().severe("Failed to load animation: " + id);
-            if (plugin.getConfig().getBoolean("emote-engine.debug", false)) {
+            if (plugin.getConfig().getBoolean("aethelion.debug", false)) {
                 e.printStackTrace();
             }
             return null;
@@ -90,7 +97,7 @@ public class ModelLoader {
             parseVectorKeyframes(rotData, keyframeMap, "rotation");
         }
         
-        // Parse scale keyframes (YOUR SPECIAL FEATURE)
+        // Parse scale keyframes
         if (boneData.has("scale")) {
             JsonObject scaleData = boneData.getAsJsonObject("scale");
             parseVectorKeyframes(scaleData, keyframeMap, "scale");
@@ -103,7 +110,7 @@ public class ModelLoader {
         JsonArray keyframes = data.getAsJsonArray("keyframes");
         for (JsonElement elem : keyframes) {
             JsonObject frame = elem.getAsJsonObject();
-            int tick = frame.get("t").getAsInt();
+            int tick = frame.has("t") ? frame.get("t").getAsInt() : 0;
             
             Vector3f vector = new Vector3f(0, 0, 0);
             if (frame.has("x")) vector.x = frame.get("x").getAsFloat();
@@ -133,7 +140,7 @@ public class ModelLoader {
     public List<String> getAvailableAnimations() {
         List<String> anims = new ArrayList<>();
         try {
-            Path folder = Paths.get(plugin.getConfig().getString("emote-engine.animations.folder", "plugins/EmoteEngine/animations/"));
+            Path folder = Path.of(plugin.getConfig().getString("aethelion.animations.folder", "plugins/Aethelion/animations/"));
             if (Files.exists(folder)) {
                 Files.walk(folder)
                     .filter(Files::isRegularFile)

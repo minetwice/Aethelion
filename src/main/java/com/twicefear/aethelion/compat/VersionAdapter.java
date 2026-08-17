@@ -1,9 +1,11 @@
-package com.yourname.emoteengine.compat;
+package com.twicefear.aethelion.compat;
 
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import java.lang.reflect.Method;
 
+/**
+ * Handles version compatibility checks
+ */
 public class VersionAdapter {
     private static final int MAJOR_VERSION;
     private static final int MINOR_VERSION;

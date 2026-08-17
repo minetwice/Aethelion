@@ -1,23 +1,23 @@
-name: EmoteEngine
+name: Aethelion
 version: 1.0.0
-main: com.yourname.emoteengine.EmoteEngine
+main: com.twicefear.aethelion.Aethelion
 api-version: 1.17
-author: YourName
-description: Custom emote and animation library plugin with scaling support
-website: https://github.com/yourusername/EmoteEngine
+author: twicefear
+description: Library plugin for custom animations and particle effects - For developers
+website: https://github.com/twicefear/Aethelion
 
 folia-supported: true
 
 commands:
-  emote:
-    description: Play emotes and manage animations
-    aliases: [em, e]
-    usage: /<command> <play|stop|list|scale|reload> [args]
+  aethelion:
+    description: Aethelion library commands (for testing/debugging)
+    aliases: [aeth, ae]
+    usage: /<command> <play|stop|list|scale|reset|effects|reload> [args]
 
 permissions:
-  emoteengine.use:
-    description: Use emotes
+  aethelion.use:
+    description: Use Aethelion features
     default: true
-  emoteengine.admin:
+  aethelion.admin:
     description: Admin commands
     default: op

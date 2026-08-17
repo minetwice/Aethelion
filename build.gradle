@@ -3,7 +3,7 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
-group = 'com.yourname.emoteengine'
+group = 'com.twicefear.aethelion'
 version = '1.0.0'
 sourceCompatibility = '17'
 targetCompatibility = '17'
@@ -20,7 +20,7 @@ dependencies {
 }
 
 shadowJar {
-    relocate 'com.google.gson', 'com.yourname.emoteengine.libs.gson'
-    relocate 'net.kyori', 'com.yourname.emoteengine.libs.kyori'
-    archiveFileName = 'EmoteEngine-' + project.version + '.jar'
+    relocate 'com.google.gson', 'com.twicefear.aethelion.libs.gson'
+    relocate 'net.kyori', 'com.twicefear.aethelion.libs.kyori'
+    archiveFileName = 'Aethelion-' + project.version + '.jar'
 }
