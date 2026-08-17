@@ -7,8 +7,11 @@ import com.twicefear.aethelion.engine.ScaleModifier;
 import com.twicefear.aethelion.listener.EmoteCommand;
 import com.twicefear.aethelion.listener.JoinListener;
 import com.twicefear.aethelion.model.ModelLoader;
+import com.twicefear.aethelion.particle.CustomParticleData;
+import com.twicefear.aethelion.particle.ParticleEngine;
 import com.twicefear.aethelion.renderer.ResourcePackGenerator;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -21,6 +24,7 @@ public class Aethelion extends JavaPlugin implements EmoteAPI {
     private AnimationEngine animationEngine;
     private ScaleModifier scaleModifier;
     private ModelLoader modelLoader;
+    private ParticleEngine particleEngine;
     private ResourcePackGenerator packGenerator;
 
     @Override
@@ -35,6 +39,7 @@ public class Aethelion extends JavaPlugin implements EmoteAPI {
         // Initialize components
         this.scaleModifier = new ScaleModifier(this);
         this.modelLoader = new ModelLoader(this);
+        this.particleEngine = new ParticleEngine(this);
         this.animationEngine = new AnimationEngine(this);
         this.packGenerator = new ResourcePackGenerator(this);
 
@@ -168,6 +173,38 @@ public class Aethelion extends JavaPlugin implements EmoteAPI {
         return modelLoader.registerAnimation(animationData);
     }
 
+    // === Particle API Implementation ===
+
+    @Override
+    public boolean registerParticle(String id, String jsonContent) {
+        return particleEngine.registerParticle(id, jsonContent);
+    }
+
+    @Override
+    public boolean registerParticle(String id, InputStream inputStream) {
+        return particleEngine.registerParticle(id, inputStream);
+    }
+
+    @Override
+    public boolean spawnParticle(Location location, String particleId) {
+        return particleEngine.spawnParticle(location, particleId);
+    }
+
+    @Override
+    public boolean spawnParticle(Location location, CustomParticleData particleData) {
+        return particleEngine.spawnParticle(location, particleData);
+    }
+
+    @Override
+    public boolean spawnParticleOnPlayer(Player player, String particleId) {
+        return particleEngine.spawnParticleOnPlayer(player, particleId);
+    }
+
+    @Override
+    public List<String> getAvailableParticles() {
+        return particleEngine.getRegisteredParticleIds();
+    }
+
     @Override
     public void promptResourcePack(Player player) {
         packGenerator.promptPlayer(player);
@@ -213,6 +250,10 @@ public class Aethelion extends JavaPlugin implements EmoteAPI {
 
     public ModelLoader getModelLoader() {
         return modelLoader;
+    }
+
+    public ParticleEngine getParticleEngine() {
+        return particleEngine;
     }
 
     public ResourcePackGenerator getPackGenerator() {

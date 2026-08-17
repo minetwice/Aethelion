@@ -4,7 +4,8 @@ AETHELION - DEVELOPER INTEGRATION & ANIMATION REGISTRATION TUTORIAL
 Plugin Name: Aethelion
 Author: Twicefear
 Base Package: com.twicefear.aethelion
-Purpose: Custom Blockbench (.bbmodel / JSON) emotes, animations & body scaling library
+Purpose: Custom Blockbench (.bbmodel / JSON) emotes, animations, body scaling &
+         no-resource-pack custom particle design library
 
 --------------------------------------------------------------------------------
 1. ADDING AETHELION TO YOUR PLUGIN PROJECT
@@ -97,7 +98,60 @@ emoteAPI.registerAnimation("custom_dance", jsonContent);
 
 
 --------------------------------------------------------------------------------
-4. PLAYING AND STOPPING ANIMATIONS ON PLAYERS
+4. CUSTOM PARTICLES & TEXTURE DESIGN (WITHOUT RESOURCE PACKS)
+--------------------------------------------------------------------------------
+
+Aethelion allows developers to define custom particles with custom RGB colors,
+dust sizes, item textures, block crunch textures, velocity, offset and speeds
+directly via JSON files inside their plugin without requiring any client resource packs!
+
+Example JSON particle file (`src/main/resources/particles/magic_aura.json`):
+```json
+{
+  "particle": {
+    "type": "REDSTONE",
+    "color": { "r": 120, "g": 255, "b": 220 },
+    "size": 1.5,
+    "count": 10,
+    "offsetX": 0.3,
+    "offsetY": 0.5,
+    "offsetZ": 0.3,
+    "speed": 0.02
+  }
+}
+```
+
+Or an item crack particle using item material textures (`particles/fire_spark.json`):
+```json
+{
+  "particle": {
+    "type": "ITEM_CRACK",
+    "material": "BLAZE_POWDER",
+    "count": 15,
+    "offsetX": 0.2,
+    "offsetY": 0.4,
+    "offsetZ": 0.2,
+    "speed": 0.05
+  }
+}
+```
+
+Registering & Spawning Custom Particles in Java:
+-----------------------------------------------
+
+// Register particle design from plugin resource stream
+InputStream particleStream = getResource("particles/magic_aura.json");
+emoteAPI.registerParticle("magic_aura", particleStream);
+
+// Spawn on a player
+emoteAPI.spawnParticleOnPlayer(player, "magic_aura");
+
+// Spawn at any Location in the world
+emoteAPI.spawnParticle(player.getLocation(), "magic_aura");
+
+
+--------------------------------------------------------------------------------
+5. PLAYING AND STOPPING ANIMATIONS ON PLAYERS
 --------------------------------------------------------------------------------
 
 // Play an animation on a player
@@ -114,7 +168,7 @@ emoteAPI.stopAllEmotes(player);
 
 
 --------------------------------------------------------------------------------
-5. BODY PART SCALING (HEAD, BODY, ARMS, LEGS)
+6. BODY PART SCALING (HEAD, BODY, ARMS, LEGS)
 --------------------------------------------------------------------------------
 
 // Scale player's head to 2.0x size (Clamped between 0.2 and 3.125)
@@ -131,11 +185,12 @@ emoteAPI.resetScale(player, null);
 
 
 --------------------------------------------------------------------------------
-6. UTILITY METHODS
+7. UTILITY METHODS
 --------------------------------------------------------------------------------
 
-// List all registered and available animations
+// List all registered and available animations & particles
 List<String> animations = emoteAPI.getAvailableEmotes();
+List<String> particles = emoteAPI.getAvailableParticles();
 
 // Prompt resource pack to a player
 emoteAPI.promptResourcePack(player);
@@ -147,8 +202,7 @@ emoteAPI.reloadAnimations();
 --------------------------------------------------------------------------------
 SUMMARY
 --------------------------------------------------------------------------------
-With Aethelion, any third-party plugin can seamlessly supply its own animation
-JSON files, register them dynamically with `registerAnimation()`, and trigger
-visible emotes & bone transforms across the server without requiring manual
-file copying into server folders!
+With Aethelion, third-party plugins can supply custom animation JSON files AND
+custom particle designs without client-side resource packs! Simply call
+`registerAnimation()` and `registerParticle()`, then play them on players!
 ================================================================================

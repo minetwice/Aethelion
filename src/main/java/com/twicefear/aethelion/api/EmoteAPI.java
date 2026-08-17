@@ -1,5 +1,7 @@
 package com.twicefear.aethelion.api;
 
+import com.twicefear.aethelion.particle.CustomParticleData;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import java.io.InputStream;
 import java.util.List;
@@ -20,6 +22,14 @@ public interface EmoteAPI {
     boolean registerAnimation(String id, String jsonContent);
     boolean registerAnimation(String id, InputStream inputStream);
     boolean registerAnimation(AnimationData animationData);
+
+    // Custom Particle Methods (Without Resource Pack)
+    boolean registerParticle(String id, String jsonContent);
+    boolean registerParticle(String id, InputStream inputStream);
+    boolean spawnParticle(Location location, String particleId);
+    boolean spawnParticle(Location location, CustomParticleData particleData);
+    boolean spawnParticleOnPlayer(Player player, String particleId);
+    List<String> getAvailableParticles();
 
     // Resource pack methods
     void promptResourcePack(Player player);
