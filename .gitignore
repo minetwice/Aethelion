@@ -1,64 +1,36 @@
 ```
-# Compiled and build artifacts
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# Compiled Java files
 *.class
 *.jar
 *.war
 *.ear
-*.o
-*.obj
-*.so
-*.dll
-*.exe
-build/
-dist/
-target/
 
-# Dependencies
-.gradle/
-node_modules/
-lib/
-libs/
-
-# Logs and temp files
-*.log
-*.tmp
-*.swp
-
-# Editors
-.vscode/
+# IDE specific
 .idea/
 *.iml
-*.iws
 *.ipr
+*.iws
+
+# Logs
+*.log
 
 # Environment
 .env
 .env.local
 *.env.*
 
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-env/
-venv/
-.venv/
-
-# Gradle
-.gradle/
-gradle/
-!gradle/wrapper/
-!gradlew
-!gradlew.bat
-
-# Coverage
-.coverage
-coverage/
-htmlcov/
-
-# System
+# OS generated files
 .DS_Store
 Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*~
 ```

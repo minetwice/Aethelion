@@ -2,6 +2,7 @@ package com.yourname.emoteengine.engine;
 
 import com.yourname.emoteengine.api.EmotePlayer;
 import com.yourname.emoteengine.api.AnimationData;
+import com.yourname.emoteengine.api.AnimationState;
 import com.yourname.emoteengine.model.ModelLoader;
 import com.yourname.emoteengine.renderer.PacketBuilder;
 import com.yourname.emoteengine.EmoteEngine;

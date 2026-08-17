@@ -4,6 +4,8 @@ import com.yourname.emoteengine.api.EmotePlayer;
 import com.yourname.emoteengine.api.AnimationState;
 import com.yourname.emoteengine.engine.BonePose;
 import com.yourname.emoteengine.engine.KeyframeInterpolator;
+import com.yourname.emoteengine.engine.ScaleModifier;
+import com.yourname.emoteengine.api.BoneKeyframe;
 import com.yourname.emoteengine.EmoteEngine;
 import org.bukkit.entity.Player;
 import org.joml.Vector3f;
@@ -11,10 +13,12 @@ import org.joml.Vector3f;
 public class PacketBuilder {
     private final EmoteEngine plugin;
     private final KeyframeInterpolator interpolator;
+    private final ScaleModifier scaleModifier;
     
     public PacketBuilder(EmoteEngine plugin) {
         this.plugin = plugin;
         this.interpolator = new KeyframeInterpolator();
+        this.scaleModifier = new ScaleModifier(plugin);
     }
     
     public void sendAnimationUpdate(Player player, EmotePlayer emotePlayer) {
@@ -29,6 +33,16 @@ public class PacketBuilder {
         // TODO: Implement reset logic to clear all animations
         if (plugin.getConfig().getBoolean("emote-engine.debug", false)) {
             plugin.getLogger().info("Resetting animations for player: " + player.getName());
+        }
+    }
+    
+    public void sendScaleUpdate(Player target, String boneName, float scale) {
+        int viewDistance = plugin.getConfig().getInt("emote-engine.rendering.view-distance", 64);
+        for (Player p : target.getWorld().getPlayers()) {
+            if (p.getLocation().distance(target.getLocation()) <= viewDistance) {
+                // Send scale update packet
+                // Use ProtocolLib or raw NMS
+            }
         }
     }
     
