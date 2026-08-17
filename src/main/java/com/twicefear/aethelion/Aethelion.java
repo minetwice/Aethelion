@@ -7,6 +7,8 @@ import com.twicefear.aethelion.engine.ScaleModifier;
 import com.twicefear.aethelion.listener.EmoteCommand;
 import com.twicefear.aethelion.listener.JoinListener;
 import com.twicefear.aethelion.model.ModelLoader;
+import com.twicefear.aethelion.model.UniversalModelLoader;
+import com.twicefear.aethelion.particle.CustomCodeParticleRuntime;
 import com.twicefear.aethelion.particle.CustomParticleData;
 import com.twicefear.aethelion.particle.ParticleEngine;
 import com.twicefear.aethelion.renderer.ResourcePackGenerator;
@@ -17,7 +19,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Aethelion extends JavaPlugin implements EmoteAPI {
     private static Aethelion instance;
@@ -25,7 +29,9 @@ public class Aethelion extends JavaPlugin implements EmoteAPI {
     private ScaleModifier scaleModifier;
     private ModelLoader modelLoader;
     private ParticleEngine particleEngine;
+    private CustomCodeParticleRuntime codeParticleRuntime;
     private ResourcePackGenerator packGenerator;
+    private final Map<String, UniversalModelLoader.UniversalModelData> universalModels = new ConcurrentHashMap<>();
 
     @Override
     public void onEnable() {
@@ -40,6 +46,7 @@ public class Aethelion extends JavaPlugin implements EmoteAPI {
         this.scaleModifier = new ScaleModifier(this);
         this.modelLoader = new ModelLoader(this);
         this.particleEngine = new ParticleEngine(this);
+        this.codeParticleRuntime = new CustomCodeParticleRuntime(this);
         this.animationEngine = new AnimationEngine(this);
         this.packGenerator = new ResourcePackGenerator(this);
 
@@ -173,6 +180,25 @@ public class Aethelion extends JavaPlugin implements EmoteAPI {
         return modelLoader.registerAnimation(animationData);
     }
 
+    @Override
+    public boolean registerUniversalObjModel(String id, InputStream objStream, InputStream mtlStream) {
+        UniversalModelLoader.UniversalModelData data = UniversalModelLoader.parseObjModel(id, objStream, mtlStream);
+        if (data != null) {
+            universalModels.put(id, data);
+            if (data.getAnimationData() != null) {
+                modelLoader.registerAnimation(data.getAnimationData());
+            }
+            getLogger().info("Registered universal OBJ model without resource pack: " + id);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public UniversalModelLoader.UniversalModelData getUniversalModel(String id) {
+        return universalModels.get(id);
+    }
+
     // === Particle API Implementation ===
 
     @Override
@@ -203,6 +229,21 @@ public class Aethelion extends JavaPlugin implements EmoteAPI {
     @Override
     public List<String> getAvailableParticles() {
         return particleEngine.getRegisteredParticleIds();
+    }
+
+    @Override
+    public boolean registerCustomCodeParticleEffect(String id, int durationTicks, CustomCodeParticleRuntime.ParticleStepCallback callback) {
+        return codeParticleRuntime.registerCustomParticleEffect(id, durationTicks, callback);
+    }
+
+    @Override
+    public boolean runParticleEffect(Location location, String effectId) {
+        return codeParticleRuntime.runParticleEffect(location, effectId);
+    }
+
+    @Override
+    public boolean runParticleEffectOnPlayer(Player player, String effectId) {
+        return codeParticleRuntime.runParticleEffectOnPlayer(player, effectId);
     }
 
     @Override
@@ -254,6 +295,10 @@ public class Aethelion extends JavaPlugin implements EmoteAPI {
 
     public ParticleEngine getParticleEngine() {
         return particleEngine;
+    }
+
+    public CustomCodeParticleRuntime getCodeParticleRuntime() {
+        return codeParticleRuntime;
     }
 
     public ResourcePackGenerator getPackGenerator() {

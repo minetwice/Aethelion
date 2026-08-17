@@ -1,208 +1,165 @@
 ================================================================================
-AETHELION - DEVELOPER INTEGRATION & ANIMATION REGISTRATION TUTORIAL
+AETHELION - MASTER DEVELOPER INTEGRATION & COMPREHENSIVE GUIDE
 ================================================================================
 Plugin Name: Aethelion
 Author: Twicefear
 Base Package: com.twicefear.aethelion
-Purpose: Custom Blockbench (.bbmodel / JSON) emotes, animations, body scaling &
-         no-resource-pack custom particle design library
+Purpose: Universal Minecraft Library Plugin for Custom BBModel/OBJ/JSON Models,
+         Animations, Body Scaling, & No-Resource-Pack Procedural Particle Designs.
 
---------------------------------------------------------------------------------
-1. ADDING AETHELION TO YOUR PLUGIN PROJECT
---------------------------------------------------------------------------------
+================================================================================
+PART 1: WHAT CAN YOU BUILD WITH AETHELION? (PLUGIN IDEAS)
+================================================================================
+With Aethelion as your core server library, you can build a wide array of high-level
+Minecraft plugins without writing custom entity rendering or packet math from scratch:
 
-A) plugin.yml Dependencies
-Add Aethelion as a dependency or soft dependency in your plugin.yml:
+1. Custom Emotes & Social Plugins:
+   - Player dance emotes, wave animations, sitting/sleeping poses.
+   - Interactive couple emotes (handshakes, high fives, hugs).
 
-depend: [Aethelion]
-# OR for soft dependency:
-softdepend: [Aethelion]
+2. RPG & MMO Skill/Magic Plugins:
+   - Custom spell casting animations (e.g. raising arms, levitating).
+   - Dynamic magical particle halos, spiral energy beams, custom aura effects.
 
-B) build.gradle Configuration
-Add Aethelion JAR as a compileOnly dependency or local jar dependency:
+3. Custom Bosses, Pets & Mounts (No Resource Pack Required):
+   - Import custom 3D OBJ or JSON models directly into your plugin JAR.
+   - Render custom mob/boss models using Display Entities automatically.
 
-dependencies {
-    compileOnly files('libs/Aethelion-1.0.0.jar')
-}
+4. Body Transformation & Scaling Plugins:
+   - Titan/Giant spells (scaling body parts or whole player up to 3.125x).
+   - Ant-man / Dwarf transformations (shrinking player down to 0.2x).
+   - Big Head mode or Custom Chibi proportions.
+
+5. Custom Particle & Visual FX Plugins:
+   - Weapon trails, wing particle FX, custom level-up celebrations.
+   - Dynamic RGB color dust and material particle explosions.
 
 
---------------------------------------------------------------------------------
-2. HOOKING INTO THE AETHELION API
---------------------------------------------------------------------------------
+================================================================================
+PART 2: FEATURES SUPPORTED BY AETHELION
+================================================================================
+- ✅ Blockbench Animation (.bbmodel) Parsing & Live Keyframe Interpolation
+- ✅ Universal OBJ Model & JSON Mesh Support (No Client Mods / No Resource Pack)
+- ✅ Custom Particle Engine (JSON & Programmatic Procedural Code without Resource Packs)
+- ✅ Body Part Scaling (head, body, left_arm, right_arm, left_leg, right_leg)
+- ✅ Paper, Spigot, Purpur, & Folia (Multi-threaded Region) Compatibility (1.17 - 1.21.11)
+- ✅ Display Entity (1.17+) & ProtocolLib Fallback Renderers
+- ✅ Optional Auto-Generated Resource Pack Generator with SHA-1 Hashing
 
-In your Java plugin's onEnable() or command listener:
 
+================================================================================
+PART 3: CRITERIA FOR DEVELOPERS
+================================================================================
+
+1. Model Integration Criteria:
+   - Supported Formats: `.bbmodel`, `.json`, `.obj` + `.mtl`.
+   - No Client Resource Pack Needed: Models are rendered on the server using
+     Display Entities (ItemDisplay/BlockDisplay/TextDisplay) or NMS packets.
+   - Bone Naming Convention: For player emote body attachments, use standard bone names:
+     `head`, `body`, `left_arm`, `right_arm`, `left_leg`, `right_leg`.
+
+2. Particle Criteria:
+   - No Client Resource Pack Needed!
+   - Particles use vanilla particle options (Dust RGB, Dust Size, Item Textures, Block Textures).
+   - Procedural Particle Code: Developers can register 1-tick step callbacks in Java
+     to render mathematical shapes (spirals, circles, wings, vectors).
+
+
+================================================================================
+PART 4: STEP-BY-STEP CODE TUTORIAL FOR DEVELOPERS
+================================================================================
+
+1. HOOKING INTO AETHELION
+-------------------------
+Add to your plugin.yml:
+  depend: [Aethelion]
+
+Java Hook Code:
+```java
 import com.twicefear.aethelion.api.EmoteAPI;
 import org.bukkit.Bukkit;
 
-public class MyPlugin extends JavaPlugin {
-    private EmoteAPI emoteAPI;
+EmoteAPI api = (EmoteAPI) Bukkit.getPluginManager().getPlugin("Aethelion");
+```
 
-    @Override
-    public void onEnable() {
-        if (Bukkit.getPluginManager().isPluginEnabled("Aethelion")) {
-            this.emoteAPI = (EmoteAPI) Bukkit.getPluginManager().getPlugin("Aethelion");
-            getLogger().info("Successfully hooked into Aethelion!");
-        } else {
-            getLogger().warning("Aethelion plugin not found!");
-        }
-    }
+2. REGISTERING BBMODEL / JSON ANIMATIONS FROM YOUR PLUGIN JAR
+-------------------------------------------------------------
+Put `dance.json` inside your plugin's `src/main/resources/animations/`:
+```java
+InputStream stream = getResource("animations/dance.json");
+api.registerAnimation("my_dance", stream);
 
-    public EmoteAPI getEmoteAPI() {
-        return emoteAPI;
-    }
-}
+// Play on player:
+api.playEmote(player, "my_dance");
+```
 
+3. REGISTERING & RENDERING OBJ + TEXTURE MODELS
+------------------------------------------------
+Put `boss.obj` and `boss.mtl` in your plugin's resources:
+```java
+InputStream objStream = getResource("models/boss.obj");
+InputStream mtlStream = getResource("models/boss.mtl");
 
---------------------------------------------------------------------------------
-3. DYNAMICALLY REGISTERING ANIMATIONS FROM YOUR OWN PLUGIN
---------------------------------------------------------------------------------
+api.registerUniversalObjModel("custom_boss", objStream, mtlStream);
+```
 
-You can bundle Blockbench animation JSON / .bbmodel files inside your plugin's
-`src/main/resources/animations/` folder and register them dynamically at runtime!
-
-Example 1: Registering from InputStream (Plugin JAR Resource)
---------------------------------------------------------------
-InputStream stream = getResource("animations/wave.json");
-if (stream != null) {
-    boolean success = emoteAPI.registerAnimation("custom_wave", stream);
-    if (success) {
-        getLogger().info("Registered 'custom_wave' animation successfully!");
-    }
-}
-
-Example 2: Registering from JSON String
-----------------------------------------
-String jsonContent = """
-{
-    "animations": {
-        "custom_dance": {
-            "loop": true,
-            "length": 40,
-            "bones": {
-                "head": {
-                    "rotation": {
-                        "keyframes": [
-                            {"t": 0, "x": 0, "y": 0, "z": 0},
-                            {"t": 20, "x": 15, "y": 0, "z": 0}
-                        ]
-                    }
-                }
-            }
-        }
-    }
-}
-""";
-
-emoteAPI.registerAnimation("custom_dance", jsonContent);
-
-
---------------------------------------------------------------------------------
-4. CUSTOM PARTICLES & TEXTURE DESIGN (WITHOUT RESOURCE PACKS)
---------------------------------------------------------------------------------
-
-Aethelion allows developers to define custom particles with custom RGB colors,
-dust sizes, item textures, block crunch textures, velocity, offset and speeds
-directly via JSON files inside their plugin without requiring any client resource packs!
-
-Example JSON particle file (`src/main/resources/particles/magic_aura.json`):
+4. CREATING CUSTOM PARTICLES VIA JSON (NO RESOURCE PACK)
+--------------------------------------------------------
+Put `aura.json` in your resources:
 ```json
 {
   "particle": {
     "type": "REDSTONE",
-    "color": { "r": 120, "g": 255, "b": 220 },
-    "size": 1.5,
-    "count": 10,
-    "offsetX": 0.3,
-    "offsetY": 0.5,
-    "offsetZ": 0.3,
-    "speed": 0.02
+    "color": { "r": 255, "g": 100, "b": 200 },
+    "size": 1.8,
+    "count": 12,
+    "offsetX": 0.4,
+    "offsetY": 0.6,
+    "offsetZ": 0.4,
+    "speed": 0.01
   }
 }
 ```
 
-Or an item crack particle using item material textures (`particles/fire_spark.json`):
-```json
-{
-  "particle": {
-    "type": "ITEM_CRACK",
-    "material": "BLAZE_POWDER",
-    "count": 15,
-    "offsetX": 0.2,
-    "offsetY": 0.4,
-    "offsetZ": 0.2,
-    "speed": 0.05
-  }
-}
+Java code to register and spawn:
+```java
+api.registerParticle("custom_aura", getResource("particles/aura.json"));
+api.spawnParticleOnPlayer(player, "custom_aura");
 ```
 
-Registering & Spawning Custom Particles in Java:
------------------------------------------------
+5. PROCEDURAL CODE-BASED PARTICLES (CUSTOM SHAPES & DYNAMICS IN CODE)
+---------------------------------------------------------------------
+You can create custom mathematical particles (e.g. rotating particle spiral):
+```java
+api.registerCustomCodeParticleEffect("spiral_halo", 40 /* 40 ticks = 2 sec */, (origin, tick, effect) -> {
+    double radius = 1.0;
+    double angle = tick * 0.3;
+    double x = radius * Math.cos(angle);
+    double z = radius * Math.sin(angle);
+    double y = (tick * 0.05);
 
-// Register particle design from plugin resource stream
-InputStream particleStream = getResource("particles/magic_aura.json");
-emoteAPI.registerParticle("magic_aura", particleStream);
+    Location particleLoc = origin.clone().add(x, y, z);
+    particleLoc.getWorld().spawnParticle(Particle.END_ROD, particleLoc, 1, 0, 0, 0, 0);
+});
 
-// Spawn on a player
-emoteAPI.spawnParticleOnPlayer(player, "magic_aura");
+// Run particle effect on player:
+api.runParticleEffectOnPlayer(player, "spiral_halo");
+```
 
-// Spawn at any Location in the world
-emoteAPI.spawnParticle(player.getLocation(), "magic_aura");
+6. BODY PART SCALING
+--------------------
+```java
+// Make player head 2.5x bigger
+api.setScale(player, "head", 2.5f);
 
+// Reset scale back to normal
+api.resetScale(player, "head");
+```
 
---------------------------------------------------------------------------------
-5. PLAYING AND STOPPING ANIMATIONS ON PLAYERS
---------------------------------------------------------------------------------
-
-// Play an animation on a player
-boolean playing = emoteAPI.playEmote(player, "custom_wave");
-
-// Check if player is currently playing an emote
-boolean isEmoting = emoteAPI.isEmoting(player);
-
-// Stop a specific emote
-emoteAPI.stopEmote(player, "custom_wave");
-
-// Stop all active emotes on player
-emoteAPI.stopAllEmotes(player);
-
-
---------------------------------------------------------------------------------
-6. BODY PART SCALING (HEAD, BODY, ARMS, LEGS)
---------------------------------------------------------------------------------
-
-// Scale player's head to 2.0x size (Clamped between 0.2 and 3.125)
-emoteAPI.setScale(player, "head", 2.0f);
-
-// Get current bone scale
-float headScale = emoteAPI.getScale(player, "head");
-
-// Reset specific bone scale
-emoteAPI.resetScale(player, "head");
-
-// Reset all bone scales on player
-emoteAPI.resetScale(player, null);
-
-
---------------------------------------------------------------------------------
-7. UTILITY METHODS
---------------------------------------------------------------------------------
-
-// List all registered and available animations & particles
-List<String> animations = emoteAPI.getAvailableEmotes();
-List<String> particles = emoteAPI.getAvailableParticles();
-
-// Prompt resource pack to a player
-emoteAPI.promptResourcePack(player);
-
-// Reload animation cache
-emoteAPI.reloadAnimations();
-
-
---------------------------------------------------------------------------------
+================================================================================
 SUMMARY
---------------------------------------------------------------------------------
-With Aethelion, third-party plugins can supply custom animation JSON files AND
-custom particle designs without client-side resource packs! Simply call
-`registerAnimation()` and `registerParticle()`, then play them on players!
+================================================================================
+Aethelion gives plugin developers full freedom to load Blockbench models, OBJ 3D meshes,
+custom animations, body scaling, and custom procedural particles—all working on
+Paper/Spigot/Folia WITHOUT requiring any client-side resource packs!
 ================================================================================
