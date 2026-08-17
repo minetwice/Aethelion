@@ -19,7 +19,7 @@ public class ParticleEffectPlayer {
      * Play an effect at a location for specific viewers
      */
     public void playEffect(String effectId, Location location, List<Player> viewers) {
-        ParticleEffect effect = Aethelion.getParticleLoader().getEffect(effectId);
+        ParticleEffect effect = com.twicefear.aethelion.Aethelion.getInstance().getParticleLoader().getEffect(effectId);
         if (effect == null) return;
         
         ActiveEffect active = new ActiveEffect(effectId, effect, location, viewers);
@@ -31,7 +31,7 @@ public class ParticleEffectPlayer {
      * Play an effect attached to an entity
      */
     public void playOnEntity(String effectId, Entity entity) {
-        ParticleEffect effect = Aethelion.getParticleLoader().getEffect(effectId);
+        ParticleEffect effect = com.twicefear.aethelion.Aethelion.getInstance().getParticleLoader().getEffect(effectId);
         if (effect == null) return;
         
         // Stop existing effect with same ID on this entity
@@ -130,8 +130,8 @@ class ActiveEffect {
     }
     
     public void start() {
-        task = Aethelion.getInstance().getServer().getScheduler()
-            .runTaskTimer(Aethelion.getInstance(), this::tick, 0L, 1L);
+        task = com.twicefear.aethelion.Aethelion.getInstance().getServer().getScheduler()
+            .runTaskTimer(com.twicefear.aethelion.Aethelion.getInstance(), this::tick, 0L, 1L);
     }
     
     public void tick() {

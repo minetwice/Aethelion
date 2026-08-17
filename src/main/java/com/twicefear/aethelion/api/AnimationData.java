@@ -27,32 +27,3 @@ public class AnimationData {
     public boolean isLoop() { return loop; }
     public EasingType getEasing() { return easing; }
 }
-
-/**
- * Keyframe data for a single bone at a specific tick
- */
-public class BoneKeyframe {
-    private final int tick;
-    private final Vector3f position;
-    private final Vector3f rotation;
-    private final Vector3f scale;
-    
-    public BoneKeyframe(int tick, Vector3f pos, Vector3f rot, Vector3f scale) {
-        this.tick = tick;
-        this.position = pos;
-        this.rotation = rot;
-        this.scale = scale;
-    }
-    
-    public int getTick() { return tick; }
-    public Vector3f getPosition() { return position; }
-    public Vector3f getRotation() { return rotation; }
-    public Vector3f getScale() { return scale; }
-}
-
-/**
- * Easing types for animation interpolation
- */
-public enum EasingType {
-    LINEAR, SMOOTH, STEP, EASE_IN, EASE_OUT, EASE_IN_OUT
-}

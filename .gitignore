@@ -9,24 +9,20 @@ target/
 
 # Dependencies
 .gradle/
+lib/
+deps/
 
 # Logs and temp files
 *.log
 *.tmp
+*.swp
 
 # Editors
 .vscode/
 .idea/
 
-# System files
-.DS_Store
-Thumbs.db
-
-# Coverage reports
-coverage/
-htmlcov/
-.coverage
-
-# Package distributions
-dist/
+# Environment
+.env
+.env.local
+*.env.*
 ```

@@ -70,20 +70,20 @@ class ParticleFrame {
                     case DUST:
                         if (data instanceof DustParticleData dust) {
                             p.spawnParticle(Particle.REDSTONE, spawnLoc, count, 
-                                0, 0, 0, 0, dust.color, true);
+                                0.1, 0.1, 0.1, 0, dust.color);
                         }
                         break;
                     case FLAME:
-                        p.spawnParticle(Particle.FLAME, spawnLoc, count, 0, 0, 0, speed);
+                        p.spawnParticle(Particle.FLAME, spawnLoc, count, 0.1, 0.1, 0.1, speed);
                         break;
                     case SMOKE:
-                        p.spawnParticle(Particle.SMOKE_NORMAL, spawnLoc, count, 0, 0, 0, speed);
+                        p.spawnParticle(Particle.SMOKE_NORMAL, spawnLoc, count, 0.1, 0.1, 0.1, speed);
                         break;
                     case HEART:
-                        p.spawnParticle(Particle.HEART, spawnLoc, count, 0, 0, 0, speed);
+                        p.spawnParticle(Particle.HEART, spawnLoc, count, 0.1, 0.1, 0.1, speed);
                         break;
                     case NOTE:
-                        p.spawnParticle(Particle.NOTE, spawnLoc, count, 0, 0, 0, speed);
+                        p.spawnParticle(Particle.NOTE, spawnLoc, count, 0.1, 0.1, 0.1, speed);
                         break;
                     case CUSTOM_TEXTURE:
                         // Will be handled by packet renderer

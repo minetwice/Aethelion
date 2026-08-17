@@ -30,7 +30,7 @@ public class ResourcePackGenerator {
              ZipOutputStream zos = new ZipOutputStream(fos)) {
             
             // pack.mcmeta
-            addFileToZip(zos, "pack.mcmeta", generateMcMeta());
+            addFileToZip(zos, "pack.mcmeta", generateMcMeta().getBytes());
             
             // Create texture directory for custom particles
             Path texturesDir = outputDir.resolve("assets/minecraft/textures/particle/");
