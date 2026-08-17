@@ -1,5 +1,6 @@
 package com.twicefear.aethelion;
 
+import com.twicefear.aethelion.api.AnimationData;
 import com.twicefear.aethelion.api.EmoteAPI;
 import com.twicefear.aethelion.engine.AnimationEngine;
 import com.twicefear.aethelion.engine.ScaleModifier;
@@ -11,6 +12,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
 
@@ -149,6 +151,21 @@ public class Aethelion extends JavaPlugin implements EmoteAPI {
     @Override
     public float getScale(Player player, String boneName) {
         return scaleModifier.getBoneScale(player, boneName);
+    }
+
+    @Override
+    public boolean registerAnimation(String id, String jsonContent) {
+        return modelLoader.registerAnimation(id, jsonContent);
+    }
+
+    @Override
+    public boolean registerAnimation(String id, InputStream inputStream) {
+        return modelLoader.registerAnimation(id, inputStream);
+    }
+
+    @Override
+    public boolean registerAnimation(AnimationData animationData) {
+        return modelLoader.registerAnimation(animationData);
     }
 
     @Override

@@ -7,6 +7,7 @@ import com.twicefear.aethelion.Aethelion;
 import org.joml.Vector3f;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,6 +19,75 @@ public class ModelLoader {
 
     public ModelLoader(Aethelion plugin) {
         this.plugin = plugin;
+    }
+
+    public boolean registerAnimation(AnimationData animationData) {
+        if (animationData == null || animationData.getId() == null) return false;
+        cache.put(animationData.getId(), animationData);
+        plugin.getLogger().info("Registered custom animation dynamically: " + animationData.getId());
+        return true;
+    }
+
+    public boolean registerAnimation(String id, String jsonContent) {
+        if (id == null || jsonContent == null || jsonContent.isEmpty()) return false;
+        try {
+            JsonObject obj = JsonParser.parseString(jsonContent).getAsJsonObject();
+            JsonObject animData = null;
+
+            if (obj.has("animations")) {
+                JsonObject animations = obj.getAsJsonObject("animations");
+                if (animations.has(id)) {
+                    animData = animations.getAsJsonObject(id);
+                } else if (!animations.keySet().isEmpty()) {
+                    String firstKey = animations.keySet().iterator().next();
+                    animData = animations.getAsJsonObject(firstKey);
+                }
+            } else {
+                animData = obj;
+            }
+
+            if (animData == null) {
+                plugin.getLogger().warning("Could not parse animation structure for registered animation: " + id);
+                return false;
+            }
+
+            int length = animData.has("length") ? animData.get("length").getAsInt() : 0;
+            boolean loop = animData.has("loop") && animData.get("loop").getAsBoolean();
+
+            Map<String, BoneKeyframe[]> boneAnimations = new HashMap<>();
+
+            if (animData.has("bones")) {
+                JsonObject bones = animData.getAsJsonObject("bones");
+                for (String boneName : bones.keySet()) {
+                    JsonObject boneData = bones.getAsJsonObject(boneName);
+                    BoneKeyframe[] keyframes = parseBoneKeyframes(boneData);
+                    boneAnimations.put(boneName, keyframes);
+                }
+            }
+
+            AnimationData anim = new AnimationData(id, boneAnimations, length, loop);
+            cache.put(id, anim);
+            plugin.getLogger().info("Successfully registered external animation: " + id);
+            return true;
+        } catch (Exception e) {
+            plugin.getLogger().severe("Failed to register animation '" + id + "': " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean registerAnimation(String id, InputStream inputStream) {
+        if (id == null || inputStream == null) return false;
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+            StringBuilder builder = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                builder.append(line).append("\n");
+            }
+            return registerAnimation(id, builder.toString());
+        } catch (IOException e) {
+            plugin.getLogger().severe("Failed to read input stream for animation '" + id + "': " + e.getMessage());
+            return false;
+        }
     }
 
     public AnimationData loadAnimation(String id) {
@@ -36,43 +106,8 @@ public class ModelLoader {
             }
 
             String json = Files.readString(file);
-            JsonObject obj = JsonParser.parseString(json).getAsJsonObject();
-
-            // Parse animations
-            if (!obj.has("animations")) {
-                plugin.getLogger().warning("No animations object found in file for animation: " + id);
-                return null;
-            }
-
-            JsonObject animations = obj.getAsJsonObject("animations");
-            if (!animations.has(id)) {
-                plugin.getLogger().warning("Animation '" + id + "' not found in file");
-                return null;
-            }
-
-            JsonObject animData = animations.getAsJsonObject(id);
-            int length = animData.has("length") ? animData.get("length").getAsInt() : 0;
-            boolean loop = animData.has("loop") && animData.get("loop").getAsBoolean();
-
-            Map<String, BoneKeyframe[]> boneAnimations = new HashMap<>();
-
-            if (animData.has("bones")) {
-                JsonObject bones = animData.getAsJsonObject("bones");
-                for (String boneName : bones.keySet()) {
-                    JsonObject boneData = bones.getAsJsonObject(boneName);
-                    BoneKeyframe[] keyframes = parseBoneKeyframes(boneData);
-                    boneAnimations.put(boneName, keyframes);
-                }
-            }
-
-            AnimationData anim = new AnimationData(id, boneAnimations, length, loop);
-
-            // Cache if enabled
-            if (plugin.getConfig().getBoolean("emote-engine.animations.cache", true)) {
-                cache.put(id, anim);
-            }
-
-            return anim;
+            boolean success = registerAnimation(id, json);
+            return success ? cache.get(id) : null;
 
         } catch (Exception e) {
             plugin.getLogger().severe("Failed to load animation: " + id);
@@ -140,7 +175,7 @@ public class ModelLoader {
     }
 
     public List<String> getAvailableAnimations() {
-        List<String> anims = new ArrayList<>();
+        Set<String> anims = new TreeSet<>(cache.keySet());
         try {
             Path folder = Paths.get(plugin.getConfig().getString("emote-engine.animations.folder", "plugins/Aethelion/animations/"));
             if (Files.exists(folder)) {
@@ -157,6 +192,6 @@ public class ModelLoader {
         } catch (Exception e) {
             plugin.getLogger().warning("Failed to list animations: " + e.getMessage());
         }
-        return anims;
+        return new ArrayList<>(anims);
     }
 }

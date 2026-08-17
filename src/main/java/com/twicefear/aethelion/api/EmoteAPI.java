@@ -1,6 +1,7 @@
 package com.twicefear.aethelion.api;
 
 import org.bukkit.entity.Player;
+import java.io.InputStream;
 import java.util.List;
 
 public interface EmoteAPI {
@@ -14,6 +15,11 @@ public interface EmoteAPI {
     void setScale(Player player, String boneName, float scale);
     void resetScale(Player player, String boneName);
     float getScale(Player player, String boneName);
+
+    // External Animation Registration (Developer Hook)
+    boolean registerAnimation(String id, String jsonContent);
+    boolean registerAnimation(String id, InputStream inputStream);
+    boolean registerAnimation(AnimationData animationData);
 
     // Resource pack methods
     void promptResourcePack(Player player);

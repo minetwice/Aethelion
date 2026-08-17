@@ -1,0 +1,154 @@
+================================================================================
+AETHELION - DEVELOPER INTEGRATION & ANIMATION REGISTRATION TUTORIAL
+================================================================================
+Plugin Name: Aethelion
+Author: Twicefear
+Base Package: com.twicefear.aethelion
+Purpose: Custom Blockbench (.bbmodel / JSON) emotes, animations & body scaling library
+
+--------------------------------------------------------------------------------
+1. ADDING AETHELION TO YOUR PLUGIN PROJECT
+--------------------------------------------------------------------------------
+
+A) plugin.yml Dependencies
+Add Aethelion as a dependency or soft dependency in your plugin.yml:
+
+depend: [Aethelion]
+# OR for soft dependency:
+softdepend: [Aethelion]
+
+B) build.gradle Configuration
+Add Aethelion JAR as a compileOnly dependency or local jar dependency:
+
+dependencies {
+    compileOnly files('libs/Aethelion-1.0.0.jar')
+}
+
+
+--------------------------------------------------------------------------------
+2. HOOKING INTO THE AETHELION API
+--------------------------------------------------------------------------------
+
+In your Java plugin's onEnable() or command listener:
+
+import com.twicefear.aethelion.api.EmoteAPI;
+import org.bukkit.Bukkit;
+
+public class MyPlugin extends JavaPlugin {
+    private EmoteAPI emoteAPI;
+
+    @Override
+    public void onEnable() {
+        if (Bukkit.getPluginManager().isPluginEnabled("Aethelion")) {
+            this.emoteAPI = (EmoteAPI) Bukkit.getPluginManager().getPlugin("Aethelion");
+            getLogger().info("Successfully hooked into Aethelion!");
+        } else {
+            getLogger().warning("Aethelion plugin not found!");
+        }
+    }
+
+    public EmoteAPI getEmoteAPI() {
+        return emoteAPI;
+    }
+}
+
+
+--------------------------------------------------------------------------------
+3. DYNAMICALLY REGISTERING ANIMATIONS FROM YOUR OWN PLUGIN
+--------------------------------------------------------------------------------
+
+You can bundle Blockbench animation JSON / .bbmodel files inside your plugin's
+`src/main/resources/animations/` folder and register them dynamically at runtime!
+
+Example 1: Registering from InputStream (Plugin JAR Resource)
+--------------------------------------------------------------
+InputStream stream = getResource("animations/wave.json");
+if (stream != null) {
+    boolean success = emoteAPI.registerAnimation("custom_wave", stream);
+    if (success) {
+        getLogger().info("Registered 'custom_wave' animation successfully!");
+    }
+}
+
+Example 2: Registering from JSON String
+----------------------------------------
+String jsonContent = """
+{
+    "animations": {
+        "custom_dance": {
+            "loop": true,
+            "length": 40,
+            "bones": {
+                "head": {
+                    "rotation": {
+                        "keyframes": [
+                            {"t": 0, "x": 0, "y": 0, "z": 0},
+                            {"t": 20, "x": 15, "y": 0, "z": 0}
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}
+""";
+
+emoteAPI.registerAnimation("custom_dance", jsonContent);
+
+
+--------------------------------------------------------------------------------
+4. PLAYING AND STOPPING ANIMATIONS ON PLAYERS
+--------------------------------------------------------------------------------
+
+// Play an animation on a player
+boolean playing = emoteAPI.playEmote(player, "custom_wave");
+
+// Check if player is currently playing an emote
+boolean isEmoting = emoteAPI.isEmoting(player);
+
+// Stop a specific emote
+emoteAPI.stopEmote(player, "custom_wave");
+
+// Stop all active emotes on player
+emoteAPI.stopAllEmotes(player);
+
+
+--------------------------------------------------------------------------------
+5. BODY PART SCALING (HEAD, BODY, ARMS, LEGS)
+--------------------------------------------------------------------------------
+
+// Scale player's head to 2.0x size (Clamped between 0.2 and 3.125)
+emoteAPI.setScale(player, "head", 2.0f);
+
+// Get current bone scale
+float headScale = emoteAPI.getScale(player, "head");
+
+// Reset specific bone scale
+emoteAPI.resetScale(player, "head");
+
+// Reset all bone scales on player
+emoteAPI.resetScale(player, null);
+
+
+--------------------------------------------------------------------------------
+6. UTILITY METHODS
+--------------------------------------------------------------------------------
+
+// List all registered and available animations
+List<String> animations = emoteAPI.getAvailableEmotes();
+
+// Prompt resource pack to a player
+emoteAPI.promptResourcePack(player);
+
+// Reload animation cache
+emoteAPI.reloadAnimations();
+
+
+--------------------------------------------------------------------------------
+SUMMARY
+--------------------------------------------------------------------------------
+With Aethelion, any third-party plugin can seamlessly supply its own animation
+JSON files, register them dynamically with `registerAnimation()`, and trigger
+visible emotes & bone transforms across the server without requiring manual
+file copying into server folders!
+================================================================================
