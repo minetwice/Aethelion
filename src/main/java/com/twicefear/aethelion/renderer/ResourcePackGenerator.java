@@ -1,0 +1,126 @@
+package com.twicefear.aethelion.renderer;
+
+import com.twicefear.aethelion.Aethelion;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+
+import java.io.*;
+import java.nio.file.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.zip.*;
+
+public class ResourcePackGenerator {
+    private final Aethelion plugin;
+    private String cachedHash = null;
+
+    public ResourcePackGenerator(Aethelion plugin) {
+        this.plugin = plugin;
+    }
+
+    public void generatePack() throws IOException, NoSuchAlgorithmException {
+        Path outputDir = Paths.get("plugins/Aethelion/resourcepack/");
+        Files.createDirectories(outputDir);
+
+        Path zipPath = outputDir.resolve("pack.zip");
+
+        try (FileOutputStream fos = new FileOutputStream(zipPath.toFile());
+             ZipOutputStream zos = new ZipOutputStream(fos)) {
+
+            // pack.mcmeta
+            addFileToZip(zos, "pack.mcmeta", generateMcMeta());
+
+            // Create texture directory
+            Path texturesDir = outputDir.resolve("assets/minecraft/textures/emotes/");
+            Files.createDirectories(texturesDir);
+
+            // Add any existing textures from animations folder
+            Path animFolder = Paths.get(plugin.getConfig().getString("emote-engine.animations.folder", "plugins/Aethelion/animations/"));
+            if (Files.exists(animFolder)) {
+                try (var stream = Files.walk(animFolder)) {
+                    stream.filter(Files::isRegularFile)
+                        .filter(p -> p.toString().endsWith(".png"))
+                        .forEach(p -> {
+                            try {
+                                String name = p.getFileName().toString();
+                                String path = "assets/minecraft/textures/emotes/" + name;
+                                addFileToZip(zos, path, Files.readAllBytes(p));
+                            } catch (IOException e) {
+                                plugin.getLogger().warning("Failed to add texture: " + p);
+                            }
+                        });
+                }
+            }
+        }
+
+        cachedHash = generateSHA1(zipPath);
+        plugin.getConfig().set("emote-engine.resource-pack.hash", cachedHash);
+        plugin.saveConfig();
+    }
+
+    private String generateMcMeta() {
+        return String.format("""
+            {
+                "pack": {
+                    "pack_format": %d,
+                    "description": "Aethelion Resource Pack - %s"
+                }
+            }
+            """, getPackFormat(), plugin.getDescription().getVersion());
+    }
+
+    private int getPackFormat() {
+        String version = Bukkit.getServer().getBukkitVersion().split("-")[0];
+        switch (version) {
+            case "1.17": case "1.18": return 7;
+            case "1.19": return 9;
+            case "1.20": return 15;
+            case "1.21": return 18;
+            default: return 15;
+        }
+    }
+
+    private void addFileToZip(ZipOutputStream zos, String path, byte[] data) throws IOException {
+        ZipEntry entry = new ZipEntry(path);
+        zos.putNextEntry(entry);
+        zos.write(data);
+        zos.closeEntry();
+    }
+
+    private void addFileToZip(ZipOutputStream zos, String path, String content) throws IOException {
+        addFileToZip(zos, path, content.getBytes());
+    }
+
+    private String generateSHA1(Path file) throws IOException, NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-1");
+        byte[] hash = digest.digest(Files.readAllBytes(file));
+        StringBuilder hex = new StringBuilder();
+        for (byte b : hash) {
+            hex.append(String.format("%02x", b));
+        }
+        return hex.toString();
+    }
+
+    public String getHash() {
+        if (cachedHash == null) {
+            cachedHash = plugin.getConfig().getString("emote-engine.resource-pack.hash");
+        }
+        return cachedHash;
+    }
+
+    public void promptPlayer(Player player) {
+        if (!plugin.getConfig().getBoolean("emote-engine.resource-pack.enabled")) return;
+
+        String url = plugin.getConfig().getString("emote-engine.resource-pack.url");
+        String hash = getHash();
+        boolean force = plugin.getConfig().getBoolean("emote-engine.resource-pack.force", false);
+
+        if (url != null && !url.isEmpty() && hash != null) {
+            if (force) {
+                player.setResourcePack(url, hash, true);
+            } else {
+                player.setResourcePack(url, hash);
+            }
+        }
+    }
+}
