@@ -1,0 +1,23 @@
+name: Aethelion
+version: 1.0.0
+main: com.twicefear.aethelion.Aethelion
+api-version: 1.17
+author: twicefear
+description: Library plugin for custom animations and particle effects - For developers
+website: https://github.com/twicefear/Aethelion
+
+folia-supported: true
+
+commands:
+  aethelion:
+    description: Aethelion library commands (for testing/debugging)
+    aliases: [aeth, ae]
+    usage: /<command> <play|stop|list|scale|reset|effects|reload> [args]
+
+permissions:
+  aethelion.use:
+    description: Use Aethelion features
+    default: true
+  aethelion.admin:
+    description: Admin commands
+    default: op

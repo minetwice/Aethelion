@@ -1,0 +1,26 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+}
+
+group = 'com.twicefear.aethelion'
+version = '1.0.0'
+sourceCompatibility = '17'
+targetCompatibility = '17'
+
+repositories {
+    mavenCentral()
+    maven { url 'https://repo.papermc.io/repository/maven-public/' }
+}
+
+dependencies {
+    compileOnly 'io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT'
+    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'net.kyori:adventure-api:4.14.0'
+}
+
+shadowJar {
+    relocate 'com.google.gson', 'com.twicefear.aethelion.libs.gson'
+    relocate 'net.kyori', 'com.twicefear.aethelion.libs.kyori'
+    archiveFileName = 'Aethelion-' + project.version + '.jar'
+}

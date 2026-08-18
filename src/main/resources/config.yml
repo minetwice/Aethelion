@@ -1,0 +1,40 @@
+aethelion:
+  enabled: true
+  debug: false
+
+  rendering:
+    method: "display_entities"  # or "packets"
+    tick-rate: 20
+    max-simultaneous: 5
+    view-distance: 64
+
+  scaling:
+    min-scale: 0.2
+    max-scale: 3.125
+    allow-non-uniform: false
+    default-scale: 1.0
+
+  animations:
+    folder: "plugins/Aethelion/animations/"
+    format: "bbmodel"
+    cache: true
+    auto-reload: false
+
+  effects:
+    folder: "plugins/Aethelion/effects/"
+    auto-load: true
+
+  textures:
+    folder: "plugins/Aethelion/textures/"
+
+  resource-pack:
+    enabled: true
+    url: "https://your-domain.com/aethelion.zip"
+    hash: "auto-generate"
+    prompt: true
+    force: false
+
+  performance:
+    async-loading: true
+    cache-size: 100
+    cleanup-interval: 300
