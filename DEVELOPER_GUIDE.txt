@@ -1,0 +1,168 @@
+================================================================================
+AETHELION LIBRARY - COMPLETE DEVELOPER GUIDE
+================================================================================
+Author: twicefear
+Version: 1.0.0
+
+IMPORTANT: This is a LIBRARY plugin. It does NOT show emotes by itself.
+Other plugins must use the API to display animations and effects.
+
+================================================================================
+QUICK START
+================================================================================
+
+1. Install Aethelion-1.0.0.jar in your server's plugins folder
+2. Add Aethelion as dependency in your plugin (see Section 1)
+3. Use the API in your code (see Sections 2-4)
+4. Test with /aethelion command
+
+================================================================================
+SECTION 1: ADD AETHELION TO YOUR PLUGIN
+================================================================================
+
+Gradle (build.gradle):
+----------------------
+repositories {
+    maven { url 'https://your-repo.com' }
+}
+dependencies {
+    compileOnly files('libs/Aethelion-1.0.0.jar')
+}
+
+Maven (pom.xml):
+----------------
+<dependency>
+    <groupId>com.twicefear</groupId>
+    <artifactId>aethelion</artifactId>
+    <version>1.0.0</version>
+    <scope>provided</scope>
+</dependency>
+
+plugin.yml:
+-----------
+depend: [Aethelion]
+
+================================================================================
+SECTION 2: BLOCKBENCH ANIMATIONS
+================================================================================
+
+STEP 1: Create animation in Blockbench
+STEP 2: Export as .bbmodel file
+STEP 3: Place in plugins/Aethelion/animations/
+STEP 4: Use in code:
+
+AethelionAPI api = (AethelionAPI) Bukkit.getPluginManager().getPlugin("Aethelion");
+api.playAnimation(player, "dance");
+api.playAnimation(player, "attack", false, 1.0f); // loop=false, speed=1.0
+api.stopAnimation(player, "dance");
+api.stopAllAnimations(player);
+
+================================================================================
+SECTION 3: BONE SCALING
+================================================================================
+
+Available bones: head, body, left_arm, right_arm, left_leg, right_leg
+
+// Set scale (0.2 to 3.125)
+api.setBoneScale(player, "head", 2.0f);
+
+// Non-uniform scale
+api.setBoneScale(player, "body", 0.5f, 2.0f, 0.5f); // X, Y, Z
+
+// Reset
+api.resetBoneScale(player, "head");
+api.resetAllBoneScales(player);
+
+// Get scale
+float scale = api.getBoneScale(player, "head");
+
+================================================================================
+SECTION 4: CUSTOM PARTICLE EFFECTS
+================================================================================
+
+STEP 1: Create JSON file (plugins/Aethelion/effects/fireball.json):
+{
+    "id": "fireball",
+    "duration": 60,
+    "loop": false,
+    "particles": [
+        {
+            "type": "flame",
+            "offsetX": 0, "offsetY": 0, "offsetZ": 0,
+            "speed": 0.1, "count": 3, "size": 1.0, "lifetime": 20
+        }
+    ]
+}
+
+STEP 2: Load and use in code:
+api.loadCustomEffect("fireball", "effects/fireball.json");
+api.playCustomEffect("fireball", location, viewers);
+api.playCustomEffectOnEntity("fireball", player);
+api.stopCustomEffect("fireball", player);
+
+================================================================================
+SECTION 5: EXAMPLE PLUGIN CODE
+================================================================================
+
+public class MyAbilities extends JavaPlugin implements Listener {
+    private AethelionAPI api;
+    
+    public void onEnable() {
+        api = (AethelionAPI) Bukkit.getPluginManager().getPlugin("Aethelion");
+        if (api == null) {
+            getLogger().severe("Aethelion required!");
+            return;
+        }
+        getServer().getPluginManager().registerEvents(this, this);
+        api.loadCustomEffect("lightning", "effects/lightning.json");
+    }
+    
+    @EventHandler
+    public void onInteract(PlayerInteractEvent e) {
+        Player p = e.getPlayer();
+        if (p.getItemInHand().getType() == Material.BLAZE_ROD) {
+            // Transform player
+            api.setBoneScale(p, "body", 1.5f);
+            api.playAnimation(p, "power_up", false, 1.5f);
+            api.playCustomEffectOnEntity("lightning", p);
+        }
+    }
+}
+
+================================================================================
+SECTION 6: PLUGIN TYPES YOU CAN BUILD
+================================================================================
+
+1. Custom Abilities - Elemental powers, transformations
+2. RPG Classes - Warrior attacks, mage spells, rogue stealth
+3. Emote/Dance - Dance competitions, social emotes
+4. Cosmetics - Pet animations, trail effects, auras
+5. Minigames - Power-ups, victory animations
+6. Horror - Monster transformations, creepy effects
+7. Anime Combat - Special attacks, power-up sequences
+
+================================================================================
+SECTION 7: TROUBLESHOOTING
+================================================================================
+
+Q: Animation not found?
+A: Check .bbmodel file is in plugins/Aethelion/animations/
+
+Q: Bones don't move?
+A: Verify bone names match Blockbench (head, body, etc.)
+
+Q: Particles don't show texture?
+A: Players must accept resource pack for custom textures
+
+Q: Scale not working?
+A: Must be between 0.2 and 3.125
+
+Commands:
+/aethelion list - Show animations
+/aethelion play <id> - Test animation
+/aethelion scale <bone> <value> - Test scaling
+/aethelion reload - Reload all
+
+================================================================================
+END OF GUIDE - Author: twicefear
+================================================================================

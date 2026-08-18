@@ -1,5 +1,6 @@
 package com.twicefear.aethelion.engine;
 
+import com.twicefear.aethelion.api.BoneKeyframe;
 import org.joml.Vector3f;
 
 /**

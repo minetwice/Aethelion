@@ -111,13 +111,18 @@ public class ResourcePackGenerator {
     }
     
     private String generateSHA1(Path file) throws IOException {
-        MessageDigest digest = MessageDigest.getInstance("SHA-1");
-        byte[] hash = digest.digest(Files.readAllBytes(file));
-        StringBuilder hex = new StringBuilder();
-        for (byte b : hash) {
-            hex.append(String.format("%02x", b));
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-1");
+            byte[] hash = digest.digest(Files.readAllBytes(file));
+            StringBuilder hex = new StringBuilder();
+            for (byte b : hash) {
+                hex.append(String.format("%02x", b));
+            }
+            return hex.toString();
+        } catch (Exception e) {
+            plugin.getLogger().severe("Failed to generate SHA-1 hash: " + e.getMessage());
+            return null;
         }
-        return hex.toString();
     }
     
     public String getHash() {
